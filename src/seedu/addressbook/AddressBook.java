@@ -71,6 +71,7 @@ public class AddressBook {
     private static final String MESSAGE_COMMAND_HELP_PARAMETERS = "\tParameters: %1$s";
     private static final String MESSAGE_COMMAND_HELP_EXAMPLE = "\tExample: %1$s";
     private static final String MESSAGE_DELETE_PERSON_SUCCESS = "Deleted Person: %1$s";
+    private static final String MESSAGE_SWAP_INDEX_OF_TWO_PERSON_SUCCESS = "Swapped index: %1$d and %2$d";
     private static final String MESSAGE_DISPLAY_PERSON_DATA = "%1$s  Phone Number: %2$s  Email: %3$s";
     private static final String MESSAGE_DISPLAY_LIST_ELEMENT_INDEX = "%1$d. ";
     private static final String MESSAGE_GOODBYE = "Exiting Address Book... Good bye!";
@@ -114,6 +115,11 @@ public class AddressBook {
     private static final String COMMAND_LIST_WORD = "list";
     private static final String COMMAND_LIST_DESC = "Displays all persons as a list with index numbers.";
     private static final String COMMAND_LIST_EXAMPLE = COMMAND_LIST_WORD;
+
+    private static final String COMMAND_SWAP_WORD = "swap";
+    private static final String COMMAND_SWAP_DESC = "Swap index of the 2 person indicated by their current index";
+    private static final String COMMAND_SWAP_PARAMETER = "INDEX INDEX";
+    private static final String COMMAND_SWAP_EXAMPLE = COMMAND_SWAP_WORD +" 1 2";
 
     private static final String COMMAND_DELETE_WORD = "delete";
     private static final String COMMAND_DELETE_DESC = "Deletes a person identified by the index number used in "
@@ -375,6 +381,8 @@ public class AddressBook {
             return executeFindPersons(commandArgs);
         case COMMAND_LIST_WORD:
             return executeListAllPersonsInAddressBook();
+        case COMMAND_SWAP_WORD:
+            return executeSwapIndexOfTwoPerson(commandArgs);
         case COMMAND_DELETE_WORD:
             return executeDeletePerson(commandArgs);
         case COMMAND_CLEAR_WORD:
@@ -577,6 +585,77 @@ public class AddressBook {
         ArrayList<String[]> toBeDisplayed = getAllPersonsInAddressBook();
         showToUser(toBeDisplayed);
         return getMessageForPersonsDisplayedSummary(toBeDisplayed);
+    }
+
+    /**
+     * Swap index of 2 people identified using last displayed index.
+     *
+     * @param commandArgs full command args string from the user
+     * @return feedback display message for the operation result
+     */
+    private static String executeSwapIndexOfTwoPerson(String commandArgs){
+        if (!isSwapIndexArgsValid(commandArgs)) {
+            return getMessageForInvalidCommandInput(COMMAND_SWAP_WORD, getUsageInfoForSwapCommand());
+        }
+        final int[] targetVisibleIndexArray = extractTargetIndexFromSwapIndexArgs(commandArgs);
+        for(int targetVisibleIndex : targetVisibleIndexArray) {
+            if (!isDisplayIndexValidForLastPersonListingView(targetVisibleIndex)) {
+                return MESSAGE_INVALID_PERSON_DISPLAYED_INDEX;
+            }
+        }
+        swapIndexOfTwoPerson(targetVisibleIndexArray[0],targetVisibleIndexArray[1]);
+        return getMessageForSuccessfulSwap(targetVisibleIndexArray);
+    }
+
+    /**
+     * Swap index of the 2 person specified and save changes to file.
+     * @param target1 index of first person
+     * @param target2 index of second person
+     */
+    private static void swapIndexOfTwoPerson(int target1, int target2) {
+        Collections.swap(ALL_PERSONS,target1 - DISPLAYED_INDEX_OFFSET,target2 - DISPLAYED_INDEX_OFFSET);
+        savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
+    }
+
+    /**
+     * Constructs a feedback message for a successful swap index command execution.
+     *
+     * @see #executeSwapIndexOfTwoPerson(String)
+     * @param swappedIndex successfully swapped
+     * @return successful swap person feedback message
+     */
+    private static String getMessageForSuccessfulSwap(int[] swappedIndex) {
+        return String.format(MESSAGE_SWAP_INDEX_OF_TWO_PERSON_SUCCESS, swappedIndex[0], swappedIndex[1]);
+    }
+
+    /**
+     * Extracts the the 2 target's index from the raw swap index args string
+     *
+     * @param rawArgs raw command args string for the swap index command
+     * @return extracted indexs
+     */
+    private static int[] extractTargetIndexFromSwapIndexArgs(String rawArgs) {
+        String separator = " ";
+        String[] splitArgs = rawArgs.split(separator);
+        int[] extractedIndex = {Integer.parseInt(splitArgs[0].trim()),Integer.parseInt(splitArgs[1].trim())};
+        return extractedIndex;
+    }
+
+    /**
+     * Checks validity of swap index argument string's format.
+     *
+     * @param rawArgs raw command args string for the swap person command
+     * @return whether the input args string is valid
+     */
+    private static boolean isSwapIndexArgsValid(String rawArgs) {
+        try{
+            String separator = " ";
+            String[] splitArgs = rawArgs.split(separator);
+            int[] extractedIndex = {Integer.parseInt(splitArgs[0].trim()),Integer.parseInt(splitArgs[1].trim())};
+            return extractedIndex[0] >= DISPLAYED_INDEX_OFFSET && extractedIndex[1] >= DISPLAYED_INDEX_OFFSET;
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
     }
 
     /**
@@ -1086,6 +1165,7 @@ public class AddressBook {
                 + getUsageInfoForFindCommand() + LS
                 + getUsageInfoForViewCommand() + LS
                 + getUsageInfoForDeleteCommand() + LS
+                + getUsageInfoForSwapCommand() + LS
                 + getUsageInfoForClearCommand() + LS
                 + getUsageInfoForExitCommand() + LS
                 + getUsageInfoForHelpCommand();
@@ -1110,6 +1190,13 @@ public class AddressBook {
         return String.format(MESSAGE_COMMAND_HELP, COMMAND_DELETE_WORD, COMMAND_DELETE_DESC) + LS
                 + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_DELETE_PARAMETER) + LS
                 + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_DELETE_EXAMPLE) + LS;
+    }
+
+    /** Returns the string for showing 'swap' command usage instruction */
+    private static String getUsageInfoForSwapCommand() {
+        return String.format(MESSAGE_COMMAND_HELP, COMMAND_SWAP_WORD, COMMAND_SWAP_DESC) + LS
+                + String.format(MESSAGE_COMMAND_HELP_PARAMETERS, COMMAND_SWAP_PARAMETER) + LS
+                + String.format(MESSAGE_COMMAND_HELP_EXAMPLE, COMMAND_SWAP_EXAMPLE) + LS;
     }
 
     /** Returns string for showing 'clear' command usage instruction */
