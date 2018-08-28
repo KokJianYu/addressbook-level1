@@ -91,6 +91,29 @@
   delete 1
   list
 
+
+##########################################################
+# test swap  person command
+##########################################################
+
+# last active view: [1] betsy [2] Dickson
+
+  #should catch invalid args format
+  swap
+  swap notindex
+  swap 1
+  swap 2
+  swap 1 2 3
+
+  #should catch attempt to swap invalid contacts
+  swap 1 3
+
+  #should swap successfully
+  swap 1 2
+
+  #list should have updated correct
+  list
+
 ##########################################################
 # test clear command
 ##########################################################
