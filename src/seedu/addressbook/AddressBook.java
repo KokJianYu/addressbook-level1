@@ -614,6 +614,7 @@ public class AddressBook {
      */
     private static void swapIndexOfTwoPerson(int target1, int target2) {
         Collections.swap(ALL_PERSONS,target1 - DISPLAYED_INDEX_OFFSET,target2 - DISPLAYED_INDEX_OFFSET);
+        Collections.swap(latestPersonListingView,target1 - DISPLAYED_INDEX_OFFSET,target2 - DISPLAYED_INDEX_OFFSET);
         savePersonsToFile(getAllPersonsInAddressBook(), storageFilePath);
     }
 
