@@ -652,6 +652,8 @@ public class AddressBook {
         try{
             String separator = " ";
             String[] splitArgs = rawArgs.split(separator);
+            if(splitArgs.length > 2)
+                return false;
             int[] extractedIndex = {Integer.parseInt(splitArgs[0].trim()),Integer.parseInt(splitArgs[1].trim())};
             return extractedIndex[0] >= DISPLAYED_INDEX_OFFSET && extractedIndex[1] >= DISPLAYED_INDEX_OFFSET;
         } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
